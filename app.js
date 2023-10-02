@@ -3,10 +3,19 @@ const express = require("express")
 
 const app =  express()
 
-const server = net.createServer({
-    keepAlive: true
+const port = 8080;
+const host = '127.0.0.1';
+
+const server = net.createServer()
+
+server.on("connection", ()=>{
+    console.log("client connected, ")
 })
 
-server.listen(8080, ()=>{
-    console.log("tcp server is running on port 8080")
+server.on("close", ()=>{
+    console.log("client connection dropped, ")
+})
+
+server.listen(port, host, ()=>{
+    console.log("tcp server is running on port " + port)
 })
