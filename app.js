@@ -6,10 +6,13 @@ const host = '127.0.0.1';
 const server = net.createServer();
 
 const clients = [];
+let clientIdCounter = 0
 
 
 server.on('connection', (socket) => {
     console.log('Client connected');
+    clientIdCounter++;
+    socket.id = clientIdCounter
     clients.push(socket);
 
     socket.on('data', (data) => {
