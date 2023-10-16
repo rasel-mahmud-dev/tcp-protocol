@@ -17,13 +17,7 @@ server.on('connection', (socket) => {
 
     socket.on('data', (data) => {
         console.log('Received from client:', data.toString());
-
-        // Broadcast the message to all clients
-        clients.forEach((client) => {
-            // if (client !== socket) {
-                client.write(data);
-            // }
-        });
+        socket.write("Message from client " + Date.now().toString(), "utf-8");
     });
 
     socket.on('end', () => {
