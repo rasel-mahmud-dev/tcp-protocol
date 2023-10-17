@@ -1,62 +1,65 @@
 const net = require('net');
-
-const express = require("express")
 const readline = require("readline");
-const app = express()
 
-const port = 8080;
+const port = 12348;
 const host = '127.0.0.1';
 
-const client = new net.Socket();
-client.setMaxListeners(2)
 
-let connectedClients = [];
+let isConnecting = false;
+let client;
 
-client.on('data', function (data) {
-    const message = data.toString().trim();
-    console.log(message)
+function connect() {
+    client = new net.Socket();
 
-    if (message === "FLEET_MODE") {
-        console.log("FLEET_MODE::Open barrier")
-    }
+    if (!isConnecting) {
 
-    if (message === "BILL_PAID") {
-        console.log("BILL_PAID::Now open barrier")
-    }
+        isConnecting = true;
 
-});
+        client.on('data', function (data) {
+            const message = data.toString().trim();
 
-client.on('close', function () {
-    console.log('Connection closed');
-});
+            if (message === "FLEET_MODE") {
+                console.log("FLEET_MODE::Open barrier")
+            }
 
-let intervalId;
-client.on('error', function () {
-    console.log('error');
-    intervalId = setInterval(()=>{
-        connect()
-    }, 1000)
-});
-
-
-function connect(){
-    if (!client.connected) {
-        client.connect({port, host}, function (socket) {
-            console.log('Client successfully connected.');
+            if (message === "BILL_PAID") {
+                console.log("BILL_PAID::Now open barrier")
+            }
         });
-    } else {
-        clearInterval(intervalId)
-        console.log("client already connected")
+
+        client.on('close', function () {
+            isConnecting = false;
+            setTimeout(connect, 1000);
+            console.log('Connection closed');
+        });
+
+
+        // client.on('error', function () {
+        //     console.log('Connection closed. Reconnecting...', Date.now());
+        //     isConnecting = false;
+        //     setTimeout(connect, 1000);
+        // });
+
+        client.on('error', function (error) {
+            console.error('Socket error:', error);
+            isConnecting = false;
+            setTimeout(connect, 1000);
+        })
+
+
+        client.connect({ port, host }, function (socket) {
+            isConnecting = true;
+            console.log('Client successfully connected.');
+            askUser();
+           // client.write("TRIGGER")
+            console.log(socket)
+        });
+
     }
 }
 
+
 connect()
-
-// app.get("/", (req, res) => {
-//     res.send("Trigger has been send.")
-//     client.write("Trigger");
-// })
-
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -66,20 +69,13 @@ const rl = readline.createInterface({
 function askUser() {
     rl.question('Press T to trigger \n', (answer) => {
         if (answer.toLowerCase() === "t") {
-            client.write("TRIGGER");
+            client?.write("TRIGGER");
         }
-        if (answer.toLowerCase() === "f") {
-            client.write("FLEET");
-
-        }
-            askUser();
+        askUser();
     });
 }
 
-askUser();
+process.on('unhandledRejection', (error) => {
+    console.error('Unhandled promise rejection:', error?.message);
+});
 
-
-
-// app.listen(1300, ()=>{
-//     console.log("http server is running on port 1200")
-// })

@@ -64,3 +64,4 @@ server.listen(port, host, () => {
     // Clear the array of connected clients
     clients = [];
 });
+
