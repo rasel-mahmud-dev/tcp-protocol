@@ -1,8 +1,8 @@
 const net = require('net');
 const readline = require("readline");
 
-const port = 12348;
-const host = '127.0.0.1';
+const port = 60036;
+const host = '192.168.152.203';
 
 
 let isConnecting = false;
@@ -33,49 +33,20 @@ function connect() {
             console.log('Connection closed');
         });
 
-
-        // client.on('error', function () {
-        //     console.log('Connection closed. Reconnecting...', Date.now());
-        //     isConnecting = false;
-        //     setTimeout(connect, 1000);
-        // });
-
-        client.on('error', function (error) {
-            console.error('Socket error:', error);
+        client.on('error', function () {
+            console.error('Socket error:');
             isConnecting = false;
             setTimeout(connect, 1000);
         })
 
-
-        client.connect({ port, host }, function (socket) {
+        client.on('connect', function (error) {
+           console.log("client has been connected.")
             isConnecting = true;
-            console.log('Client successfully connected.');
-            askUser();
-           // client.write("TRIGGER")
-            console.log(socket)
-        });
+        })
+
+        client.connect({ port, host });
 
     }
 }
 
-
 connect()
-
-const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-});
-
-function askUser() {
-    rl.question('Press T to trigger \n', (answer) => {
-        if (answer.toLowerCase() === "t") {
-            client?.write("TRIGGER");
-        }
-        askUser();
-    });
-}
-
-process.on('unhandledRejection', (error) => {
-    console.error('Unhandled promise rejection:', error?.message);
-});
-
