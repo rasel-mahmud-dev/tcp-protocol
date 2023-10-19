@@ -2,7 +2,7 @@ const net = require('net');
 const readline = require("readline");
 
 const port = 60036;
-const host = '192.168.152.203';
+const host = 'localhost';
 
 
 let isConnecting = false;
